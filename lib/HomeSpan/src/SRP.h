@@ -69,45 +69,61 @@ struct SRP6A
     static const uint8_t g3072 = 5;
     static constexpr char I[] = "Pair-Setup";
 
-    mbedtls_mpi N;  // N                            - 3072-bit Group pre-defined prime used for all SRP-6A calculations
-                    // (384 bytes)
-    mbedtls_mpi g;  // g                            - pre-defined generator for the specified 3072-bit Group (g=5)
-    mbedtls_mpi
-        k;  // k = H(N | PAD(g))            - SRP-6A multiplier (which is different from versions SRP-6 or SRP-3)
-    mbedtls_mpi s;    // s                            - randomly-generated salt (16 bytes)
-    mbedtls_mpi x;    // x = H(s | H(I | ":" | P))    - salted, double-hash of username and password (64 bytes)
-    mbedtls_mpi v;    // v = g^x %N                   - SRP-6A verifier (max 384 bytes)
-    mbedtls_mpi b;    // b                            - randomly-generated private key for this HAP accessory (i.e. the
-                      // SRP Server) (32 bytes)
-    mbedtls_mpi B;    // B = k*v + g^b %N             - public key for this accessory (max 384 bytes)
-    mbedtls_mpi A;    // A                            - public key RECEIVED from HAP Client (max 384 bytes)
-    mbedtls_mpi u;    // u = H(PAD(A) | PAB(B))       - "u-factor" (64 bytes)
-    mbedtls_mpi S;    // S = (A*v^u)^b %N             - SRP shared "premaster" key, based on accessory private key and
-                      // client public key (max 384 bytes)
-    uint8_t K[64];    // K = H(S)                     - SRP SHARED SECRET KEY (64 bytes)
-    uint8_t M1[64];   // M1                           - proof RECEIVED from HAP Client (64 bytes)
-    mbedtls_mpi t1;   // temp1                        - temporary mpi structures for intermediate results
-    mbedtls_mpi t2;   // temp2                        - temporary mpi structures for intermediate results
-    mbedtls_mpi t3;   // temp3                        - temporary mpi structures for intermediate results
-    mbedtls_mpi _rr;  // _rr                          - temporary "helper" for large exponential modulus calculations
+    // N                            - 3072-bit Group pre-defined prime used for all SRP-6A calculations (384 bytes)
+    mbedtls_mpi N;
+    // g                            - pre-defined generator for the specified 3072-bit Group (g=5)
+    mbedtls_mpi g;
+    // k = H(N | PAD(g))            - SRP-6A multiplier (which is different from versions SRP-6 or SRP-3)
+    mbedtls_mpi k;
+    // s                            - randomly-generated salt (16 bytes)
+    mbedtls_mpi s;
+    // x = H(s | H(I | ":" | P))    - salted, double-hash of username and password (64 bytes)
+    mbedtls_mpi x;
+    // v = g^x %N                   - SRP-6A verifier (max 384 bytes)
+    mbedtls_mpi v;
+    // b                            - randomly-generated private key for this HAP accessory
+    // (i.e. the SRP Server) (32 bytes)
+    mbedtls_mpi b;
+    // B = k*v + g^b %N             - public key for this accessory (max 384 bytes)
+    mbedtls_mpi B;
+    // A                            - public key RECEIVED from HAP Client (max 384 bytes)
+    mbedtls_mpi A;
+    // u = H(PAD(A) | PAB(B))       - "u-factor" (64 bytes)
+    mbedtls_mpi u;
+    // S = (A*v^u)^b %N             - SRP shared "premaster" key, based on accessory private key and client public key
+    // (max 384 bytes)
+    mbedtls_mpi S;
+    // K = H(S)                     - SRP SHARED SECRET KEY (64 bytes)
+    uint8_t K[64];
+    // M1                           - proof RECEIVED from HAP Client (64 bytes)
+    uint8_t M1[64];
+    // temp1                        - temporary mpi structures for intermediate results
+    mbedtls_mpi t1;
+    // temp2                        - temporary mpi structures for intermediate results
+    mbedtls_mpi t2;
+    // temp3                        - temporary mpi structures for intermediate results
+    mbedtls_mpi t3;
+    // _rr                          - temporary "helper" for large exponential modulus calculations
+    mbedtls_mpi _rr;
 
-    SRP6A();  // initializes N, G, and computes k
+    // initializes N, G, and computes k
+    SRP6A();
     ~SRP6A();
 
-    void *operator new(size_t size) { return (HS_MALLOC(size)); }  // override new operator to use PSRAM when available
+    // override new operator to use PSRAM when available
+    void *operator new(size_t size) { return (HS_MALLOC(size)); }
 
-    void createVerifyCode(
-        const char *setupCode,
-        Verification *vData);  // generates random s and computes v; writes back resulting Verification Data
-    void createPublicKey(
-        const Verification *vData,
-        uint8_t *publicKey);  // generates random b and computes k and B; writes back resulting Accessory Public Key
-    void createSessionKey(const uint8_t *publicKey,
-                          size_t len);            // computes u, S, and K from Client Public Key, A (of variable length)
-    int verifyClientProof(const uint8_t *proof);  // verifies Client Proof, M1, received from HAP client (return 1 on
-                                                  // success, 0 on failure)
-    void createAccProof(uint8_t *proof);          // computes M2; write back resulting Accessory Proof
+    // generates random s and computes v; writes back resulting Verification Data
+    void createVerifyCode(const char *setupCode, Verification *vData);
+    // generates random b and computes k and B; writes back resulting Accessory Public Key
+    void createPublicKey(const Verification *vData, uint8_t *publicKey);
+    // computes u, S, and K from Client Public Key, A (of variable length)
+    void createSessionKey(const uint8_t *publicKey, size_t len);
+    // verifies Client Proof, M1, received from HAP client (return 1 on success, 0 on failure)
+    int verifyClientProof(const uint8_t *proof);
+    // computes M2; write back resulting Accessory Proof
+    void createAccProof(uint8_t *proof);
 
-    void print(
-        mbedtls_mpi *mpi);  // prints size of mpi (in bytes), followed by the mpi itself (as a hex character string)
+    // prints size of mpi (in bytes), followed by the mpi itself (as a hex character string)
+    void print(mbedtls_mpi *mpi);
 };

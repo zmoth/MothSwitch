@@ -39,12 +39,13 @@ struct Network
 {
     const int MAX_HTTP = 4095;  // max number of bytes in HTTP message
 
-    const char *apSSID = DEFAULT_AP_SSID;          // Access Point SSID
-    const char *apPassword = DEFAULT_AP_PASSWORD;  // Access Point password (does not need to be secret - only used to
-                                                   // ensure encrypted WiFi connection)
-    unsigned long lifetime =
-        DEFAULT_AP_TIMEOUT *
-        1000;  // length of time (in milliseconds) to keep Access Point alive before shutting down and restarting
+    // Access Point SSID
+    const char *apSSID = DEFAULT_AP_SSID;
+    // Access Point password (does not need to be secret - only used to  ensure encrypted WiFi connection)
+    const char *apPassword = DEFAULT_AP_PASSWORD;
+
+    // length of time (in milliseconds) to keep Access Point alive before shutting down and restarting
+    unsigned long lifetime = DEFAULT_AP_TIMEOUT * 1000;
 
     char **ssidList = NULL;
     int numSSID;
@@ -62,16 +63,21 @@ struct Network
 
     char setupCode[8 + 1];
 
-    void scan();                   // scan for WiFi networks and save only those with unique SSIDs
-    void serialConfigure();        // configure homeSpan WiFi from serial monitor
-    boolean allowedCode(char *s);  // checks if Setup Code is allowed (HAP defines a list of disallowed codes)
-    void apConfigure();  // configure homeSpan WiFi and Setup Code using temporary Captive Access Point; only returns if
-                         // sucessful, else ESP restarts
-    void processRequest(char *body, char *formData);  // process the HTTP request
-    int getFormValue(char *formData,
-                     const char *tag,
-                     char *value,
-                     int maxSize);  // search for 'tag' in 'formData' and copy result into 'value' up to 'maxSize'
-                                    // characters; returns number of characters, else -1 if 'tag' not found
-    int badRequestError();          // return 400 error
+    // scan for WiFi networks and save only those with unique SSIDs
+    void scan();
+    // configure homeSpan WiFi from serial monitor
+    void serialConfigure();
+    // checks if Setup Code is allowed (HAP defines a list of disallowed codes)
+    boolean allowedCode(char *s);
+    // configure homeSpan WiFi and Setup Code using temporary Captive Access Point; only returns if sucessful, else ESP
+    // restarts
+    void apConfigure();
+    // process the HTTP request
+    void processRequest(char *body, char *formData);
+    // search for 'tag' in 'formData' and copy result into 'value' up to 'maxSize' characters; returns number of
+    // characters, else -1 if 'tag' not found
+    int getFormValue(char *formData, const char *tag, char *value, int maxSize);
+
+    // return 400 error
+    int badRequestError();
 };

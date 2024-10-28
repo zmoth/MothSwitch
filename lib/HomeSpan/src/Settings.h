@@ -35,27 +35,38 @@
 #define DEFAULT_HOST_NAME "HomeSpan"            // change with optional third argument in homeSpan.begin()
 #define DEFAULT_MODEL_NAME "HomeSpan-ESP32"     // change with optional fourth argument in homeSpan.begin()
 
-#define DEFAULT_SETUP_CODE "46637726"  // changed during network setup or with 'S' command
+// changed during network setup or with 'S' command
+#define DEFAULT_SETUP_CODE "97654321"
 
-#define DEFAULT_QR_ID "HSPN"  // change with homeSpan.setQRID(qrID);
+// change with homeSpan.setQRID(qrID);
+#define DEFAULT_QR_ID "HSPN"
 
-#define DEFAULT_AP_SSID "HomeSpan-Setup"     // change with homeSpan.setApSSID(ssid)
-#define DEFAULT_AP_PASSWORD "homespan"       // change with homeSpan.setApPassword(pwd)
-#define DEFAULT_OTA_PASSWORD "homespan-ota"  // change with 'O' command
+// change with homeSpan.setApSSID(ssid)
+#define DEFAULT_AP_SSID "HomeSpan-Setup"
+// change with homeSpan.setApPassword(pwd)
+#define DEFAULT_AP_PASSWORD "homespan"
+// change with 'O' command
+#define DEFAULT_OTA_PASSWORD "homespan-ota"
 
-#define DEFAULT_AP_TIMEOUT 300       // change with homeSpan.setApTimeout(nSeconds)
-#define DEFAULT_COMMAND_TIMEOUT 120  // change with homeSpan.setCommandTimeout(nSeconds)
+// change with homeSpan.setApTimeout(nSeconds)
+#define DEFAULT_AP_TIMEOUT 300
+// change with homeSpan.setCommandTimeout(nSeconds)
+#define DEFAULT_COMMAND_TIMEOUT 120
 
-#define DEFAULT_LOG_LEVEL 0  // change with homeSpan.setLogLevel(level)
+// change with homeSpan.setLogLevel(level)
+#define DEFAULT_LOG_LEVEL 0
 
-#define DEFAULT_TCP_PORT 80  // change with homeSpan.setPort(port);
+// change with homeSpan.setPort(port);
+#define DEFAULT_TCP_PORT 80
 
-#define DEFAULT_WEBLOG_URL "status"  // change with optional fourth argument in homeSpan.enableWebLog()
+// change with optional fourth argument in homeSpan.enableWebLog()
+#define DEFAULT_WEBLOG_URL "status"
 
-#define DEFAULT_LOW_MEM_THRESHOLD \
-    80000  // default low watermark memory (for internal RAM) threshold that triggers warning
+// default low watermark memory (for internal RAM) threshold that triggers warning
+#define DEFAULT_LOW_MEM_THRESHOLD 80000
 
-#define DEFAULT_REBOOT_CALLBACK_TIME 5000  // default time (in milliseconds) to check for reboot callback
+// default time (in milliseconds) to check for reboot callback
+#define DEFAULT_REBOOT_CALLBACK_TIME 5000
 
 /////////////////////////////////////////////////////
 //              OTA PARTITION INFO                 //

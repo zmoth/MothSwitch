@@ -66,10 +66,8 @@ class LedC
   public:
     int getPin() { return (channel ? channel->gpio_num : -1); }  // returns the pin number
 
-    operator bool()
-    {  // override boolean operator to return true/false if creation succeeded/failed
-        return (channel);
-    }
+    // override boolean operator to return true/false if creation succeeded/failed
+    operator bool() { return (channel); }
 };
 
 /////////////////////////////////////

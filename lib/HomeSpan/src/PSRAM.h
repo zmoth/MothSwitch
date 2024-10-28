@@ -50,6 +50,7 @@ struct Mallocator
     constexpr Mallocator(const Mallocator<U> &)
     {
     }
+
     [[nodiscard]] T *allocate(std::size_t n)
     {
         auto p = static_cast<T *>(HS_MALLOC(n * sizeof(T)));

@@ -256,9 +256,9 @@ void SRP6A::print(mbedtls_mpi *mpi)
     TempBuffer<char> sBuf(sLen);
     mbedtls_mpi_write_string(mpi, 16, sBuf, sLen, &sLen);
 
-    Serial.printf("%d %s\n", (sLen - 1) / 2,
-                  sBuf.get());  // subtract 1 for null-terminator, and then divide by 2 to get number of bytes (e.g. 4F
-                                // = 2 characters, but represents just one mpi byte)
+    // subtract 1 for null-terminator, and then divide by 2 to get number of bytes (e.g. 4F = 2 characters, but
+    // represents just one mpi byte)
+    Serial.printf("%d %s\n", (sLen - 1) / 2, sBuf.get());
 }
 
 //////////////////////////////////////

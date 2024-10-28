@@ -29,11 +29,12 @@
 
 #include "version.h"
 
-#pragma GCC diagnostic ignored \
-    "-Wpmf-conversions"  // eliminates warning messages from use of pointers to member functions to detect whether
-                         // update() and loop() are overridden by user
-#pragma GCC diagnostic ignored "-Wunused-result"  // eliminates warning message regarded unused result from call to
-                                                  // crypto_scalarmult_curve25519()
+// eliminates warning messages from use of pointers to member functions to detect whether update() and loop() are
+// overridden by user
+#pragma GCC diagnostic ignored "-Wpmf-conversions"
+
+// eliminates warning message regarded unused result from call to crypto_scalarmult_curve25519()
+#pragma GCC diagnostic ignored "-Wunused-result"
 
 #include <Arduino.h>
 #include <unordered_map>
@@ -161,14 +162,16 @@ struct SpanConfig
 
 ///////////////////////////////
 
+// temporary storage buffer for use with putCharacteristicsURL() and checkTimedResets()
 struct SpanBuf
-{                        // temporary storage buffer for use with putCharacteristicsURL() and checkTimedResets()
+{
     uint32_t aid = 0;    // updated aid
     uint32_t iid = 0;    // updated iid
     boolean wr = false;  // flag to indicate write-response has been requested
-    char *val = NULL;    // updated value (optional, though either at least 'val' or 'ev' must be specified)
-    char *ev =
-        NULL;  // updated event notification flag (optional, though either at least 'val' or 'ev' must be specified)
+    // updated value (optional, though either at least 'val' or 'ev' must be specified)
+    char *val = NULL;
+    // updated event notification flag (optional, though either at least 'val' or 'ev' must be specified)
+    char *ev = NULL;
     StatusCode status;                          // return status (HAP Table 6-11)
     SpanCharacteristic *characteristic = NULL;  // Characteristic to update (NULL if not found)
 };
@@ -278,14 +281,14 @@ class Span
         1000;  // length of time (in milliseconds) to keep Command Mode alive before resuming normal operations
     uint16_t tcpPortNum = DEFAULT_TCP_PORT;  // port for TCP communications between HomeKit and HomeSpan
     char qrID[5] = "";                       // Setup ID used for pairing with QR Code
-    void (*wifiCallback)() =
-        NULL;  // optional callback function to invoke once WiFi connectivity is initially established
-    void (*wifiCallbackAll)(int) =
-        NULL;  // optional callback function to invoke every time WiFi connectivity is established or re-established
-    void (*weblogCallback)(String &) =
-        NULL;  // optional callback function to invoke after header table in Web Log is produced
-    void (*pairCallback)(boolean isPaired) =
-        NULL;  // optional callback function to invoke when pairing is established (true) or lost (false)
+    // optional callback function to invoke once WiFi connectivity is initially established
+    void (*wifiCallback)() = NULL;
+    // optional callback function to invoke every time WiFi connectivity is established or re-established
+    void (*wifiCallbackAll)(int) = NULL;
+    // optional callback function to invoke after header table in Web Log is produced
+    void (*weblogCallback)(String &) = NULL;
+    // optional callback function to invoke when pairing is established (true) or lost (false)
+    void (*pairCallback)(boolean isPaired) = NULL;
     boolean autoStartAPEnabled = false;  // enables auto start-up of Access Point when WiFi Credentials not found
     void (*apFunction)() = NULL;         // optional function to invoke when starting Access Point
     void (*statusCallback)(HS_STATUS status) = NULL;  // optional callback when HomeSpan status changes
@@ -325,26 +328,25 @@ class Span
     void resetStatus();   // resets statusLED and calls statusCallback based on current HomeSpan status
     void reboot();        // reboots device
 
-    void printfAttributes(int flags = GET_VALUE | GET_META | GET_PERMS | GET_TYPE |
-                                      GET_DESC);  // writes Attributes JSON database to hapOut stream
+    // writes Attributes JSON database to hapOut stream
+    void printfAttributes(int flags = GET_VALUE | GET_META | GET_PERMS | GET_TYPE | GET_DESC);
 
-    SpanCharacteristic *find(uint32_t aid,
-                             uint32_t iid);  // return Characteristic with matching aid and iid (else NULL if not found)
-    int countCharacteristics(
-        char *buf);  // return number of characteristic objects referenced in PUT /characteristics JSON request
-    int updateCharacteristics(char *buf,
-                              SpanBuf *pObj);  // parses PUT /characteristics JSON request 'buf into 'pObj' and updates
-                                               // referenced characteristics; returns 1 on success, 0 on fail
-    void printfAttributes(SpanBuf *pObj, int nObj);  // writes SpanBuf objects to hapOut stream
-    boolean printfAttributes(char **ids,
-                             int numIDs,
-                             int flags);  // writes accessory requested characteristic ids to hapOut stream - returns
-                                          // true if all characteristics are found and readable, else returns false
-    void clearNotify(HAPClient *hc);      // clear all notifications related to specific client connection
-    void printfNotify(
-        SpanBuf *pObj,
-        int nObj,
-        HAPClient *hc);  // writes notification JSON to hapOut stream based on SpanBuf objects and specified connection
+    // return Characteristic with matching aid and iid (else NULL if not found)
+    SpanCharacteristic *find(uint32_t aid, uint32_t iid);
+    // return number of characteristic objects referenced in PUT /characteristics JSON request
+    int countCharacteristics(char *buf);
+    // parses PUT /characteristics JSON request 'buf into 'pObj' and updates referenced characteristics; returns 1 on
+    // success, 0 on fail
+    int updateCharacteristics(char *buf, SpanBuf *pObj);
+    // writes SpanBuf objects to hapOut stream
+    void printfAttributes(SpanBuf *pObj, int nObj);
+    // writes accessory requested characteristic ids to hapOut stream - returns true if all characteristics are found
+    // and readable, else returns false
+    boolean printfAttributes(char **ids, int numIDs, int flags);
+    // clear all notifications related to specific client connection
+    void clearNotify(HAPClient *hc);
+    // writes notification JSON to hapOut stream based on SpanBuf objects and specified connection
+    void printfNotify(SpanBuf *pObj, int nObj, HAPClient *hc);
 
     static boolean invalidUUID(const char *uuid)
     {
@@ -364,172 +366,191 @@ class Span
                const char *hostNameBase = DEFAULT_HOST_NAME,
                const char *modelName = DEFAULT_MODEL_NAME);
 
-    void poll();  // calls pollTask() with some error checking
-    void processSerialCommand(
-        const char *c);  // process command 'c' (typically from readSerial, though can be called with any 'c')
+    // calls pollTask() with some error checking
+    void poll();
+    // process command 'c' (typically from readSerial, though can be called with any 'c')
+    void processSerialCommand(const char *c);
 
-    boolean updateDatabase(boolean updateMDNS = true);  // updates HAP Configuration Number and Loop vector; if
-                                                        // updateMDNS=true and config number has changed, re-broadcasts
-                                                        // MDNS 'c#' record; returns true if config number changed
-    boolean deleteAccessory(
-        uint32_t aid);  // deletes Accessory with matching aid; returns true if found, else returns false
+    // updates HAP Configuration Number and Loop vector; if updateMDNS=true and config number has changed, re-broadcasts
+    // MDNS 'c#' record; returns true if config number changed
+    boolean updateDatabase(boolean updateMDNS = true);
+    // deletes Accessory with matching aid; returns true if found, else returns false
+    boolean deleteAccessory(uint32_t aid);
 
+    // sets Control Pin, with optional trigger type
     Span &setControlPin(uint8_t pin, PushButton::triggerType_t triggerType = PushButton::TRIGGER_ON_LOW)
-    {  // sets Control Pin, with optional trigger type
+    {
         controlButton = new PushButton(pin, triggerType);
         return (*this);
     }
-
-    int getControlPin()
-    {
-        return (controlButton ? controlButton->getPin() : -1);
-    }  // get Control Pin (returns -1 if undefined)
-
+    // get Control Pin (returns -1 if undefined)
+    int getControlPin() { return (controlButton ? controlButton->getPin() : -1); }
+    // sets Status Device to a simple LED on specified pin
     Span &setStatusPin(uint8_t pin)
     {
         statusDevice = new GenericLED(pin);
         return (*this);
-    }  // sets Status Device to a simple LED on specified pin
+    }
+    // sets Status Device to an RGB Pixel on specified pin
     Span &setStatusPixel(uint8_t pin, float h = 0, float s = 100, float v = 100)
-    {  // sets Status Device to an RGB Pixel on specified pin
+    {
         statusDevice = ((new Pixel(pin))->setOnColor(Pixel::HSV(h, s, v)));
         return (*this);
     }
+    // sets Status Device to a generic Blinkable object
     Span &setStatusDevice(Blinkable *sDev)
     {
         statusDevice = sDev;
         return (*this);
-    }  // sets Status Device to a generic Blinkable object
-
+    }
+    // sets Status LED auto off (seconds)
     Span &setStatusAutoOff(uint16_t duration)
     {
         autoOffLED = duration;
         return (*this);
-    }  // sets Status LED auto off (seconds)
-    int getStatusPin() { return (statusLED->getPin()); }  // get Status Pin (returns -1 if undefined)
+    }
+    // get Status Pin (returns -1 if undefined)
+    int getStatusPin() { return (statusLED->getPin()); }
+    // refreshes state of Status LED
     void refreshStatusDevice()
     {
         if (statusLED)
             statusLED->refresh();
-    }  // refreshes state of Status LED
-
+    }
+    // sets Access Point SSID
     Span &setApSSID(const char *ssid)
     {
         network.apSSID = ssid;
         return (*this);
-    }  // sets Access Point SSID
+    }
+    // sets Access Point Password
     Span &setApPassword(const char *pwd)
     {
         network.apPassword = pwd;
         return (*this);
-    }  // sets Access Point Password
+    }
+    // sets Access Point Timeout (seconds)
     Span &setApTimeout(uint16_t nSec)
     {
         network.lifetime = nSec * 1000;
         return (*this);
-    }  // sets Access Point Timeout (seconds)
+    }
+    // sets Command Mode Timeout (seconds)
     Span &setCommandTimeout(uint16_t nSec)
     {
         comModeLife = nSec * 1000;
         return (*this);
-    }  // sets Command Mode Timeout (seconds)
+    }
+    // sets Log Level for log messages (0=baseline, 1=intermediate, 2=all, -1=disable all serial input/output)
     Span &setLogLevel(int level)
     {
         logLevel = level;
         return (*this);
-    }  // sets Log Level for log messages (0=baseline, 1=intermediate, 2=all, -1=disable all serial input/output)
-    int getLogLevel() { return (logLevel); }  // get Log Level
+    }
+    // get Log Level
+    int getLogLevel() { return (logLevel); }
+    // sets whether serial input is disabled (true) or enabled (false)
     Span &setSerialInputDisable(boolean val)
     {
         serialInputDisabled = val;
         return (*this);
-    }  // sets whether serial input is disabled (true) or enabled (false)
-    boolean getSerialInputDisable()
-    {
-        return (serialInputDisabled);
-    }  // returns true if serial input is disabled, or false if serial input in enabled
+    }
+    // returns true if serial input is disabled, or false if serial input in enabled
+    boolean getSerialInputDisable() { return (serialInputDisabled); }
+    // sets the TCP port number to use for communications between HomeKit and HomeSpan
     Span &setPortNum(uint16_t port)
     {
         tcpPortNum = port;
         return (*this);
-    }  // sets the TCP port number to use for communications between HomeKit and HomeSpan
-    Span &setQRID(const char *id);  // sets the Setup ID for optional pairing with a QR Code
+    }
+    // sets the Setup ID for optional pairing with a QR Code
+    Span &setQRID(const char *id);
+    // set optional sketch version number
     Span &setSketchVersion(const char *sVer)
     {
         sketchVersion = sVer;
         return (*this);
-    }  // set optional sketch version number
-    const char *getSketchVersion() { return sketchVersion; }  // get sketch version number
+    }
+    // get sketch version number
+    const char *getSketchVersion() { return sketchVersion; }
+    // sets an optional user-defined function to call once WiFi connectivity is initially established
     Span &setWifiCallback(void (*f)())
     {
         wifiCallback = f;
         return (*this);
-    }  // sets an optional user-defined function to call once WiFi connectivity is initially established
+    }
+    // sets an optional user-defined function to call every time WiFi connectivity is established or re-established
     Span &setWifiCallbackAll(void (*f)(int))
     {
         wifiCallbackAll = f;
         return (*this);
-    }  // sets an optional user-defined function to call every time WiFi connectivity is established or re-established
+    }
+    // sets an optional user-defined function to call when Pairing is established (true) or lost (false)
     Span &setPairCallback(void (*f)(boolean isPaired))
     {
         pairCallback = f;
         return (*this);
-    }  // sets an optional user-defined function to call when Pairing is established (true) or lost (false)
+    }
+    // sets an optional user-defined function to call when activating the WiFi Access Point
     Span &setApFunction(void (*f)())
     {
         apFunction = f;
         return (*this);
-    }  // sets an optional user-defined function to call when activating the WiFi Access Point
+    }
+    // enables auto start-up of Access Point when WiFi Credentials not found
     Span &enableAutoStartAP()
     {
         autoStartAPEnabled = true;
         return (*this);
-    }  // enables auto start-up of Access Point when WiFi Credentials not found
-    Span &setWifiCredentials(const char *ssid, const char *pwd);  // sets WiFi Credentials
+    }
+    // sets WiFi Credentials
+    Span &setWifiCredentials(const char *ssid, const char *pwd);
+    // sets an optional user-defined function to call when HomeSpan status changes
     Span &setStatusCallback(void (*f)(HS_STATUS status))
     {
         statusCallback = f;
         return (*this);
-    }  // sets an optional user-defined function to call when HomeSpan status changes
-    const char *statusString(HS_STATUS s);  // returns char string for HomeSpan status change messages
-    Span &setPairingCode(
-        const char *s,
-        boolean progCall = true);  // sets the Pairing Code - use is NOT recommended.  Use 'S' from CLI instead
-    void deleteStoredValues() { processSerialCommand("V"); }  // deletes stored Characteristic values from NVS
-    Span &resetIID(uint32_t newIID);  // resets the IID count for the current Accessory to start at newIID
+    }
+    // returns char string for HomeSpan status change messages
+    const char *statusString(HS_STATUS s);
+    // sets the Pairing Code - use is NOT recommended.  Use 'S' from CLI instead
+    Span &setPairingCode(const char *s, boolean progCall = true);
+    // deletes stored Characteristic values from NVS
+    void deleteStoredValues() { processSerialCommand("V"); }
+    // resets the IID count for the current Accessory to start at newIID
+    Span &resetIID(uint32_t newIID);
+    // sets an optional user-defined function to call whenever a Controller is added/removed/changed
     Span &setControllerCallback(void (*f)())
     {
         controllerCallback = f;
         return (*this);
-    }  // sets an optional user-defined function to call whenever a Controller is added/removed/changed
+    }
 
+    // sets the hostName suffix to be used instead of the 6-byte AccessoryID
     Span &setHostNameSuffix(const char *suffix)
     {
         asprintf(&hostNameSuffix, "%s", suffix);
         return (*this);
-    }  // sets the hostName suffix to be used instead of the 6-byte AccessoryID
+    }
+    // enables Over-the-Air updates, with (auth=true) or without (auth=false) authorization password
+    int enableOTA(boolean auth = true, boolean safeLoad = true) { return (spanOTA.init(auth, safeLoad, NULL)); }
+    // enables Over-the-Air updates, with custom authorization password
+    // (overrides any password stored with the 'O' command)
+    int enableOTA(const char *pwd, boolean safeLoad = true) { return (spanOTA.init(true, safeLoad, pwd)); }
 
-    int enableOTA(boolean auth = true, boolean safeLoad = true)
-    {
-        return (spanOTA.init(auth, safeLoad, NULL));
-    }  // enables Over-the-Air updates, with (auth=true) or without (auth=false) authorization password
-    int enableOTA(const char *pwd, boolean safeLoad = true)
-    {
-        return (spanOTA.init(true, safeLoad, pwd));
-    }  // enables Over-the-Air updates, with custom authorization password (overrides any password stored with the 'O'
-       // command)
-
+    // enable Web Logging
     Span &enableWebLog(uint16_t maxEntries = 0,
                        const char *serv = NULL,
                        const char *tz = "UTC",
                        const char *url = DEFAULT_WEBLOG_URL)
-    {  // enable Web Logging
+    {
         webLog.init(maxEntries, serv, tz, url);
         return (*this);
     }
 
+    // add Web Log entry
     void addWebLog(boolean sysMsg, const char *fmt, ...)
-    {  // add Web Log entry
+    {
         va_list ap;
         va_start(ap, fmt);
         webLog.vLog(sysMsg, fmt, ap);
@@ -561,8 +582,9 @@ class Span
         return (*this);
     }
 
+    // start pollTask()
     void autoPoll(uint32_t stackSize = 8192, uint32_t priority = 1, uint32_t cpu = 0)
-    {  // start pollTask()
+    {
         xTaskCreateUniversal(
             [](void *parms) {
                 for (;;) {
@@ -576,11 +598,12 @@ class Span
 
     TaskHandle_t getAutoPollTask() { return (pollTaskHandle); }
 
+    // sets wait time (in seconds) for optional web log time server to connect
     Span &setTimeServerTimeout(uint32_t tSec)
     {
         webLog.waitTime = tSec * 1000;
         return (*this);
-    }  // sets wait time (in seconds) for optional web log time server to connect
+    }
 
     list<Controller, Mallocator<Controller>>::const_iterator controllerListBegin();
     list<Controller, Mallocator<Controller>>::const_iterator controllerListEnd();
@@ -603,19 +626,25 @@ class SpanAccessory
     friend class SpanCharacteristic;
     friend class SpanButton;
 
-    uint32_t aid = 0;  // Accessory Instance ID (HAP Table 6-1)
-    uint32_t iidCount =
-        0;  // running count of iid to use for Services and Characteristics associated with this Accessory
-    vector<SpanService *, Mallocator<SpanService *>> Services;  // vector of pointers to all Services in this Accessory
+    // Accessory Instance ID (HAP Table 6-1)
+    uint32_t aid = 0;
+    // running count of iid to use for Services and Characteristics associated with this Accessory
+    uint32_t iidCount = 0;
+    // vector of pointers to all Services in this Accessory
+    vector<SpanService *, Mallocator<SpanService *>> Services;
 
-    void printfAttributes(int flags);  // writes Accessory JSON to hapOut stream
+    // writes Accessory JSON to hapOut stream
+    void printfAttributes(int flags);
 
   protected:
-    ~SpanAccessory();  // destructor
+    // destructor
+    ~SpanAccessory();
 
   public:
-    void *operator new(size_t size) { return (HS_MALLOC(size)); }  // override new operator to use PSRAM when available
-    SpanAccessory(uint32_t aid = 0);                               // constructor
+    // override new operator to use PSRAM when available
+    void *operator new(size_t size) { return (HS_MALLOC(size)); }
+    // constructor
+    SpanAccessory(uint32_t aid = 0);
 };
 
 ///////////////////////////////
@@ -626,37 +655,52 @@ class SpanService
     friend class SpanAccessory;
     friend class SpanCharacteristic;
 
-    uint32_t iid = 0;         // Instance ID (HAP Table 6-2)
-    const char *type;         // Service Type
-    const char *hapName;      // HAP Name
-    boolean hidden = false;   // optional property indicating service is hidden
-    boolean primary = false;  // optional property indicating service is primary
-    vector<SpanCharacteristic *, Mallocator<SpanCharacteristic *>>
-        Characteristics;  // vector of pointers to all Characteristics in this Service
-    vector<SpanService *, Mallocator<SpanService *>>
-        linkedServices;               // vector of pointers to any optional linked Services
-    boolean isCustom;                 // flag to indicate this is a Custom Service
-    SpanAccessory *accessory = NULL;  // pointer to Accessory containing this Service
+    // Instance ID (HAP Table 6-2)
+    uint32_t iid = 0;
+    // Service Type
+    const char *type;
+    // HAP Name
+    const char *hapName;
+    // optional property indicating service is hidden
+    boolean hidden = false;
+    // optional property indicating service is primary
+    boolean primary = false;
+    // vector of pointers to all Characteristics in this Service
+    vector<SpanCharacteristic *, Mallocator<SpanCharacteristic *>> Characteristics;
+    // vector of pointers to any optional linked Services
+    vector<SpanService *, Mallocator<SpanService *>> linkedServices;
+    // flag to indicate this is a Custom Service
+    boolean isCustom;
+    // pointer to Accessory containing this Service
+    SpanAccessory *accessory = NULL;
 
-    void printfAttributes(int flags);  // writes Service JSON to hapOut stream
+    // writes Service JSON to hapOut stream
+    void printfAttributes(int flags);
 
   protected:
-    virtual ~SpanService();  // destructor
-    vector<HapChar *, Mallocator<HapChar *>>
-        req;  // vector of pointers to all required HAP Characteristic Types for this Service
-    vector<HapChar *, Mallocator<HapChar *>>
-        opt;  // vector of pointers to all optional HAP Characteristic Types for this Service
+    // destructor
+    virtual ~SpanService();
+    // vector of pointers to all required HAP Characteristic Types for this Service
+    vector<HapChar *, Mallocator<HapChar *>> req;
+    // vector of pointers to all optional HAP Characteristic Types for this Service
+    vector<HapChar *, Mallocator<HapChar *>> opt;
 
   public:
-    void *operator new(size_t size) { return (HS_MALLOC(size)); }  // override new operator to use PSRAM when available
-    SpanService(const char *type, const char *hapName, boolean isCustom = false);  // constructor
-    SpanService *setPrimary();               // sets the Service Type to be primary and returns pointer to self
-    SpanService *setHidden();                // sets the Service Type to be hidden and returns pointer to self
-    SpanService *addLink(SpanService *svc);  // adds svc as a Linked Service and returns pointer to self
+    // override new operator to use PSRAM when available
+    void *operator new(size_t size) { return (HS_MALLOC(size)); }
+    // constructor
+    SpanService(const char *type, const char *hapName, boolean isCustom = false);
+    // sets the Service Type to be primary and returns pointer to self
+    SpanService *setPrimary();
+    // sets the Service Type to be hidden and returns pointer to self
+    SpanService *setHidden();
+    // adds svc as a Linked Service and returns pointer to self
+    SpanService *addLink(SpanService *svc);
 
+    // returns linkedServices vector, mapped to <T>, for use as range in "for-each" loops
     template <typename T = SpanService *>
     vector<T, Mallocator<T>> getLinks(const char *hapName = NULL)
-    {  // returns linkedServices vector, mapped to <T>, for use as range in "for-each" loops
+    {
         vector<T, Mallocator<T>> v;
         for (auto svc : linkedServices) {
             if (hapName == NULL || !strcmp(hapName, svc->hapName))
@@ -665,16 +709,17 @@ class SpanService
         return (v);
     }
 
-    uint32_t getIID() { return (iid); }  // returns IID of Service
+    // returns IID of Service
+    uint32_t getIID() { return (iid); }
 
-    virtual boolean update()
-    {
-        return (true);
-    }  // placeholder for code that is called when a Service is updated via a Controller.  Must return true/false
-       // depending on success of update
-    virtual void loop() {}  // loops for each Service - called every cycle if over-ridden with user-defined code
-    virtual void button(int pin, int pressType) {}  // method called for a Service when a button attached to "pin" has a
-                                                    // Single, Double, or Long Press, according to pressType
+    // placeholder for code that is called when a Service is updated via a Controller.  Must return true/false depending
+    // on success of update
+    virtual boolean update() { return (true); }
+    // loops for each Service - called every cycle if over-ridden with user-defined code
+    virtual void loop() {}
+    // method called for a Service when a button attached to "pin" has a Single, Double, or Long Press, according to
+    // pressType
+    virtual void button(int pin, int pressType) {}
 };
 
 ///////////////////////////////
@@ -696,13 +741,16 @@ class SpanCharacteristic
         char *STRING = NULL;
     };
 
+    // vector of current connections that have subscribed to EV notifications for this Characteristic
     class EVLIST : public vector<HAPClient *, Mallocator<HAPClient *>>
-    {  // vector of current connections that have subscribed to EV notifications for this Characteristic
+    {
       public:
-        boolean has(HAPClient *hc);  // returns true if pointer to connection hc is subscribed, else returns false
-        void add(HAPClient *hc);     // adds connection hc as new subscriber, IF not already a subscriber
-        void remove(HAPClient *hc);  // removes connection hc as a subscriber; okay to remove even if hc was not already
-                                     // a subscriber
+        // returns true if pointer to connection hc is subscribed, else returns false
+        boolean has(HAPClient *hc);
+        // adds connection hc as new subscriber, IF not already a subscriber
+        void add(HAPClient *hc);
+        // removes connection hc as a subscriber; okay to remove even if hc was not already a subscriber
+        void remove(HAPClient *hc);
     };
 
     uint32_t iid = 0;             // Instance ID (HAP Table 6-3)
@@ -736,21 +784,23 @@ class SpanCharacteristic
     SpanService *service = NULL;  // pointer to Service containing this Characteristic
     EVLIST evList;  // vector of current connections that have subscribed to EV notifications for this Characteristic
 
-    void printfAttributes(int flags);  // writes Characteristic JSON to hapOut stream
-    StatusCode loadUpdate(char *val,
-                          char *ev,
-                          boolean wr);  // load updated val/ev from PUT /characteristic JSON request.  Return intitial
-                                        // HAP status code (checks to see if characteristic is found, is writable, etc.)
-    String uvPrint(UVal &u);            // returns "printable" String for any type of Characteristic
+    // writes Characteristic JSON to hapOut stream
+    void printfAttributes(int flags);
+    // load updated val/ev from PUT /characteristic JSON request.  Return intitial
+    // HAP status code (checks to see if characteristic is found, is writable, etc.)
+    StatusCode loadUpdate(char *val, char *ev, boolean wr);
+    // returns "printable" String for any type of Characteristic
+    String uvPrint(UVal &u);
 
     void uvSet(UVal &dest, UVal &src);   // copies UVal src into UVal dest
     void uvSet(UVal &u, STRING_t val);   // copies string val into UVal u
     void uvSet(UVal &u, DATA_t data);    // copies DATA data into UVal u (after transforming to a char *)
     void uvSet(UVal &u, TLV_ENC_t tlv);  // copies TLV8 tlv into UVal u (after transforming to a char *)
 
+    // copies numeric val into UVal u
     template <typename T>
     void uvSet(UVal &u, T val)
-    {  // copies numeric val into UVal u
+    {
         switch (format) {
             case FORMAT::BOOL:
                 u.BOOL = (boolean)val;
@@ -778,16 +828,17 @@ class SpanCharacteristic
         }  // switch
     }
 
-    char *getStringGeneric(UVal &val);  // gets the specified UVal for string-based Characteristics
-    size_t getDataGeneric(uint8_t *data,
-                          size_t len,
-                          UVal &val);            // gets the specified UVal for data-based Characteristics
-    size_t getTLVGeneric(TLV8 &tlv, UVal &val);  // gets the specified UVal for tlv8-based Characteristics
+    // gets the specified UVal for string-based Characteristics
+    char *getStringGeneric(UVal &val);
+    // gets the specified UVal for data-based Characteristics
+    size_t getDataGeneric(uint8_t *data, size_t len, UVal &val);
+    // gets the specified UVal for tlv8-based Characteristics
+    size_t getTLVGeneric(TLV8 &tlv, UVal &val);
 
+    // gets the specified UVal for numeric-based Characteristics
     template <class T>
     T uvGet(UVal &u)
-    {  // gets the specified UVal for numeric-based Characteristics
-
+    {
         switch (format) {
             case FORMAT::BOOL:
                 return ((T)u.BOOL);
@@ -829,10 +880,11 @@ class SpanCharacteristic
 
             if (format < FORMAT::STRING) {
                 if (nvs_get_u64(homeSpan.charNVS, nvsKey, &(value.UINT64)) != ESP_OK) {
-                    nvs_set_u64(homeSpan.charNVS, nvsKey,
-                                value.UINT64);     // store data as uint64_t regardless of actual type (it will be read
-                                                   // correctly when access through uvGet())
-                    nvs_commit(homeSpan.charNVS);  // commit to NVS
+                    // store data as uint64_t regardless of actual type (it will be read correctly when access through
+                    // uvGet())
+                    nvs_set_u64(homeSpan.charNVS, nvsKey, value.UINT64);
+                    // commit to NVS
+                    nvs_commit(homeSpan.charNVS);
                 }
             } else {
                 if (!nvs_get_str(homeSpan.charNVS, nvsKey, NULL, &len)) {
@@ -852,51 +904,51 @@ class SpanCharacteristic
             uvSet(maxValue, max);
             uvSet(stepValue, 0);
         }
-
-    }  // init()
+    }
 
   public:
-    SpanCharacteristic(HapChar *hapChar, boolean isCustom = false);  // SpanCharacteristic constructor
-    void *operator new(size_t size) { return (HS_MALLOC(size)); }  // override new operator to use PSRAM when available
+    // SpanCharacteristic constructor
+    SpanCharacteristic(HapChar *hapChar, boolean isCustom = false);
+    // override new operator to use PSRAM when available
+    void *operator new(size_t size) { return (HS_MALLOC(size)); }
 
+    // gets the value for numeric-based Characteristics
     template <class T = int>
     T getVal()
     {
         return (uvGet<T>(value));
-    }  // gets the value for numeric-based Characteristics
-    char *getString() { return (getStringGeneric(value)); }  // gets the value for string-based Characteristics
-    size_t getData(uint8_t *data, size_t len)
-    {
-        return (getDataGeneric(data, len, value));
-    }  // gets the value for data-based Characteristics
-    size_t getTLV(TLV8 &tlv) { return (getTLVGeneric(tlv, value)); }  // gets the value for tlv8-based Characteristics
+    }
+    // gets the value for string-based Characteristics
+    char *getString() { return (getStringGeneric(value)); }
+    // gets the value for data-based Characteristics
+    size_t getData(uint8_t *data, size_t len) { return (getDataGeneric(data, len, value)); }
+    // gets the value for tlv8-based Characteristics
+    size_t getTLV(TLV8 &tlv) { return (getTLVGeneric(tlv, value)); }
 
+    // gets the newValue for numeric-based Characteristics
     template <class T = int>
     T getNewVal()
     {
         return (uvGet<T>(newValue));
-    }  // gets the newValue for numeric-based Characteristics
-    char *getNewString() { return (getStringGeneric(newValue)); }  // gets the newValue for string-based Characteristics
-    size_t getNewData(uint8_t *data, size_t len)
-    {
-        return (getDataGeneric(data, len, newValue));
-    }  // gets the newValue for data-based Characteristics
-    size_t getNewTLV(TLV8 &tlv)
-    {
-        return (getTLVGeneric(tlv, newValue));
-    }  // gets the newValue for tlv8-based Characteristics
+    }
+    // gets the newValue for string-based Characteristics
+    char *getNewString() { return (getStringGeneric(newValue)); }
+    // gets the newValue for data-based Characteristics
+    size_t getNewData(uint8_t *data, size_t len) { return (getDataGeneric(data, len, newValue)); }
+    // gets the newValue for tlv8-based Characteristics
+    size_t getNewTLV(TLV8 &tlv) { return (getTLVGeneric(tlv, newValue)); }
 
-    void setString(const char *val,
-                   boolean notify = true);  // sets the value and newValue for string-based Characteristic
-    void setData(const uint8_t *data,
-                 size_t len,
-                 boolean notify = true);                  // sets the value and newValue for data-based Characteristic
-    void setTLV(const TLV8 &tlv, boolean notify = true);  // sets the value and newValue for tlv8-based Characteristic
+    // sets the value and newValue for string-based Characteristic
+    void setString(const char *val, boolean notify = true);
+    // sets the value and newValue for data-based Characteristic
+    void setData(const uint8_t *data, size_t len, boolean notify = true);
+    // sets the value and newValue for tlv8-based Characteristic
+    void setTLV(const TLV8 &tlv, boolean notify = true);
 
+    // sets the value and newValue for numeric-based Characteristics
     template <typename T>
     void setVal(T val, boolean notify = true)
-    {  // sets the value and newValue for numeric-based Characteristics
-
+    {
         setValCheck();
 
         if (!((val >= uvGet<T>(minValue)) && (val <= uvGet<T>(maxValue)))) {
@@ -928,26 +980,34 @@ class SpanCharacteristic
                 nvs_commit(homeSpan.charNVS);
             }
         }
+    }
 
-    }  // setVal()
+    // returns true within update() if Characteristic was updated by Home App
+    boolean updated();
+    // returns time elapsed (in millis) since value was last updated, either by Home App or by using setVal()
+    unsigned long timeVal();
 
-    boolean updated();        // returns true within update() if Characteristic was updated by Home App
-    unsigned long timeVal();  // returns time elapsed (in millis) since value was last updated, either by Home App or by
-                              // using setVal()
-    uint32_t getIID();        // returns IID of Characteristic
+    // returns IID of Characteristic
+    uint32_t getIID();
 
-    SpanCharacteristic *setPerms(uint8_t perms);        // sets permissions of a Characteristic
-    SpanCharacteristic *addPerms(uint8_t dPerms);       // add permissions of a Characteristic
-    SpanCharacteristic *removePerms(uint8_t dPerms);    // removes permissions of a Characteristic
-    SpanCharacteristic *setDescription(const char *c);  // sets description of a Characteristic
-    SpanCharacteristic *setUnit(const char *c);         // set unit of a Characteristic
-    SpanCharacteristic *setValidValues(int n, ...);  // sets a list of 'n' valid values allowed for a Characteristic -
-                                                     // only applicable if format=INT, UINT8, UINT16, or UINT32
+    // sets permissions of a Characteristic
+    SpanCharacteristic *setPerms(uint8_t perms);
+    // add permissions of a Characteristic
+    SpanCharacteristic *addPerms(uint8_t dPerms);
+    // removes permissions of a Characteristic
+    SpanCharacteristic *removePerms(uint8_t dPerms);
+    // sets description of a Characteristic
+    SpanCharacteristic *setDescription(const char *c);
+    // set unit of a Characteristic
+    SpanCharacteristic *setUnit(const char *c);
+    // sets a list of 'n' valid values allowed for a Characteristic - only applicable if format=INT, UINT8, UINT16, or
+    // UINT32
+    SpanCharacteristic *setValidValues(int n, ...);
 
+    // sets the allowed range of a Characteristic
     template <typename A, typename B, typename S = int>
     SpanCharacteristic *setRange(A min, B max, S step = 0)
-    {  // sets the allowed range of a Characteristic
-
+    {
         if (!staticRange) {
             uvSet(minValue, min);
             uvSet(maxValue, max);
@@ -973,7 +1033,8 @@ class SpanButton : public PushButton
     uint16_t doubleTime;   // maximum time (in millis) between single presses to register a double press instead
     SpanService *service;  // Service to which this PushButton is attached
 
-    void check();  // check PushButton and call button() if "pressed"
+    // check PushButton and call button() if "pressed"
+    void check();
 
   protected:
     enum buttonType_t
@@ -982,7 +1043,8 @@ class SpanButton : public PushButton
         HS_TOGGLE
     };
 
-    buttonType_t buttonType = HS_BUTTON;  // type of SpanButton
+    // type of SpanButton
+    buttonType_t buttonType = HS_BUTTON;
 
   public:
     SpanButton(int pin,
