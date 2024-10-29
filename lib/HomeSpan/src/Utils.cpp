@@ -198,9 +198,7 @@ boolean PushButton::triggered(uint16_t singleTime, uint16_t longTime, uint16_t d
         case 4:
             if (!triggerType(pin)) {  // button is released
                 status = 0;
-            } else
-
-                if (cTime > singleAlarm) {  // button is still pressed
+            } else if (cTime > singleAlarm) {  // button is still pressed
                 status = 5;
                 pressType = DOUBLE;
                 doubleCheck = false;
@@ -234,9 +232,7 @@ boolean PushButton::toggled(uint16_t toggleTime)
         case 1:
             if (!triggerType(pin)) {  // switch is toggled back OPEN too soon
                 toggleStatus = 0;
-            }
-
-            else if (cTime > singleAlarm) {  // switch has been in CLOSED state for sufficient time
+            } else if (cTime > singleAlarm) {  // switch has been in CLOSED state for sufficient time
                 toggleStatus = 2;
                 pressType = CLOSED;
                 return (true);

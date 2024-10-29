@@ -464,45 +464,53 @@ void Span::checkConnect()
     char cNum[16];
     sprintf(cNum, "%d", hapConfig.configNumber);
 
-    mdns_service_txt_item_set("_hap", "_tcp", "c#", cNum);  // Accessory Current Configuration Number (updated whenever
-                                                            // config of HAP Accessory Attribute Database is updated)
-    mdns_service_txt_item_set("_hap", "_tcp", "md", modelName);  // Accessory Model Name
-    mdns_service_txt_item_set("_hap", "_tcp", "ci", category);   // Accessory Category (HAP Section 13.1)
-    mdns_service_txt_item_set("_hap", "_tcp", "id",
-                              id);  // string version of Accessory ID in form XX:XX:XX:XX:XX:XX (HAP Section 5.4)
+    // Accessory Current Configuration Number (updated whenever config of HAP Accessory Attribute Database is updated)
+    mdns_service_txt_item_set("_hap", "_tcp", "c#", cNum);
+    // Accessory Model Name
+    mdns_service_txt_item_set("_hap", "_tcp", "md", modelName);
+    // Accessory Category (HAP Section 13.1)
+    mdns_service_txt_item_set("_hap", "_tcp", "ci", category);
+    // string version of Accessory ID in form XX:XX:XX:XX:XX:XX (HAP Section 5.4)
+    mdns_service_txt_item_set("_hap", "_tcp", "id", id);
+    // HAP Pairing Feature flags.  MUST be "0" to specify Pair Setup method (HAP Table 5-3) without MiFi
+    // Authentification
+    mdns_service_txt_item_set("_hap", "_tcp", "ff", "0");
+    // HAP version - MUST be set to "1.1" (HAP Section 6.6.3)
+    mdns_service_txt_item_set("_hap", "_tcp", "pv", "1.1");
+    // HAP current state - MUST be set to "1"
+    mdns_service_txt_item_set("_hap", "_tcp", "s#", "1");
 
-    mdns_service_txt_item_set("_hap", "_tcp", "ff", "0");  // HAP Pairing Feature flags.  MUST be "0" to specify Pair
-                                                           // Setup method (HAP Table 5-3) without MiFi Authentification
-    mdns_service_txt_item_set("_hap", "_tcp", "pv", "1.1");  // HAP version - MUST be set to "1.1" (HAP Section 6.6.3)
-    mdns_service_txt_item_set("_hap", "_tcp", "s#", "1");    // HAP current state - MUST be set to "1"
-
-    if (!HAPClient::nAdminControllers())                       // Accessory is not yet paired
+    // Accessory is not yet paired
+    if (!HAPClient::nAdminControllers())
         mdns_service_txt_item_set("_hap", "_tcp", "sf", "1");  // set Status Flag = 1 (Table 6-8)
     else
         mdns_service_txt_item_set("_hap", "_tcp", "sf", "0");  // set Status Flag = 0
 
-    mdns_service_txt_item_set("_hap", "_tcp", "hspn",
-                              HOMESPAN_VERSION);  // HomeSpan Version Number (info only - NOT used by HAP)
-    mdns_service_txt_item_set("_hap", "_tcp", "ard-esp32",
-                              ARDUINO_ESP_VERSION);  // Arduino-ESP32 Version Number (info only - NOT used by HAP)
-    mdns_service_txt_item_set("_hap", "_tcp", "board", ARDUINO_VARIANT);  // Board Name (info only - NOT used by HAP)
-    mdns_service_txt_item_set("_hap", "_tcp", "sketch", sketchVersion);  // Sketch Version (info only - NOT used by HAP)
+    // HomeSpan Version Number (info only - NOT used by HAP)
+    mdns_service_txt_item_set("_hap", "_tcp", "hspn", HOMESPAN_VERSION);
+    // Arduino-ESP32 Version Number (info only - NOT used by HAP)
+    mdns_service_txt_item_set("_hap", "_tcp", "ard-esp32", ARDUINO_ESP_VERSION);
+    // Board Name (info only - NOT used by HAP)
+    mdns_service_txt_item_set("_hap", "_tcp", "board", ARDUINO_VARIANT);
+    // Sketch Version (info only - NOT used by HAP)
+    mdns_service_txt_item_set("_hap", "_tcp", "sketch", sketchVersion);
 
     uint8_t hashInput[22];
     uint8_t hashOutput[64];
     char setupHash[9];
     size_t len;
 
-    memcpy(hashInput, qrID,
-           4);  // Create the Setup ID for use with optional QR Codes.  This is an undocumented feature of HAP R2!
-    memcpy(hashInput + 4, id,
-           17);  // Step 1: Concatenate 4-character Setup ID and 17-character Accessory ID into hashInput
-    mbedtls_sha512_ret(hashInput, 21, hashOutput,
-                       0);  // Step 2: Perform SHA-512 hash on combined 21-byte hashInput to create 64-byte hashOutput
-    mbedtls_base64_encode((uint8_t *)setupHash, 9, &len, hashOutput,
-                          4);  // Step 3: Encode the first 4 bytes of hashOutput in base64, which results in an
-                               // 8-character, null-terminated, setupHash
-    mdns_service_txt_item_set("_hap", "_tcp", "sh", setupHash);  // Step 4: broadcast the resulting Setup Hash
+    // Create the Setup ID for use with optional QR Codes.  This is an undocumented feature of HAP R2!
+    memcpy(hashInput, qrID, 4);
+    // Step 1: Concatenate 4-character Setup ID and 17-character Accessory ID into hashInput
+    memcpy(hashInput + 4, id, 17);
+    // Step 2: Perform SHA-512 hash on combined 21-byte hashInput to create 64-byte hashOutput
+    mbedtls_sha512_ret(hashInput, 21, hashOutput, 0);
+    // Step 3: Encode the first 4 bytes of hashOutput in base64, which results in an 8-character, null-terminated,
+    // setupHash
+    mbedtls_base64_encode((uint8_t *)setupHash, 9, &len, hashOutput, 4);
+    // Step 4: broadcast the resulting Setup Hash
+    mdns_service_txt_item_set("_hap", "_tcp", "sh", setupHash);
 
     if (spanOTA.enabled) {
         ArduinoOTA.setHostname(hostName);
@@ -517,12 +525,12 @@ void Span::checkConnect()
         LOG0("Authorization Password: %s", spanOTA.auth ? "Enabled\n\n" : "DISABLED!\n\n");
     }
 
-    mdns_service_txt_item_set("_hap", "_tcp", "ota",
-                              spanOTA.enabled ? "yes" : "no");  // OTA status (info only - NOT used by HAP)
+    // OTA status (info only - NOT used by HAP)
+    mdns_service_txt_item_set("_hap", "_tcp", "ota", spanOTA.enabled ? "yes" : "no");
 
     if (webLog.isEnabled) {
-        mdns_service_txt_item_set("_hap", "_tcp", "logURL",
-                                  webLog.statusURL.c_str() + 4);  // Web Log status (info only - NOT used by HAP)
+        // Web Log status (info only - NOT used by HAP)
+        mdns_service_txt_item_set("_hap", "_tcp", "logURL", webLog.statusURL.c_str() + 4);
 
         LOG0("Web Logging enabled at http://%s.local:%d%swith max number of entries=%d\n\n", hostName, tcpPortNum,
              webLog.statusURL.c_str() + 4, webLog.maxEntries);
