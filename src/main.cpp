@@ -23,6 +23,10 @@ class DevLed : public Service::LightBulb
     int powerPin;
     SpanCharacteristic *power;
 
+    int resetCount{0};
+    uint32_t resetAlarm{0};
+    uint32_t resetTime{3000};
+
   public:
     DevLed(int ledPin, int powerPin)
     {
@@ -42,13 +46,40 @@ class DevLed : public Service::LightBulb
 
     void button(int pin, int pressType) override
     {
+        unsigned long cTime = millis();
+
+        if (resetCount == 0 || cTime > resetAlarm) {
+            resetAlarm = cTime + resetTime;
+            resetCount = 0;
+        }
+
         if (pressType == SpanButton::OPEN || pressType == SpanButton::CLOSED) {
             power->setVal(1 - power->getVal());
+
+            resetCount++;
+        }
+
+        if (resetCount == 7 && cTime < resetAlarm) {
+            homeSpan.processSerialCommand("A");
+
+            digitalWrite(ledPin, LOW);
+            return;
         }
 
         digitalWrite(ledPin, power->getVal());
     }
 };
+
+String getID()
+{
+#if defined(ESP8266)
+    String id(ESP.getChipId());
+#elif defined(ESP32)
+    String id((uint32_t)ESP.getEfuseMac(), HEX);
+#endif
+    id.toUpperCase();
+    return id;
+}
 
 void setup()
 {
@@ -57,6 +88,9 @@ void setup()
     homeSpan.setStatusAutoOff(10);  // 10s
     homeSpan.setStatusDevice(new InvertedLED(LED_PIN));
     homeSpan.setControlPin(BUTTON_PIN);
+
+    homeSpan.setApSSID("MothHomeSetup");
+    homeSpan.setApPassword("97654321");
 
     homeSpan.begin(Category::Outlets, "Moth Switch");
 
