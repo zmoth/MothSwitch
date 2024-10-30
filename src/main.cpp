@@ -97,6 +97,8 @@ void setup()
     new SpanAccessory();
     new Service::AccessoryInformation();
     new Characteristic::Manufacturer("MOTH");
+    new Characteristic::SerialNumber(getID().c_str());
+    new Characteristic::Model("A1");
     new Characteristic::FirmwareRevision(FIRMWARE_VERSION);
     new Characteristic::HardwareRevision(HARDWARE_VERSION);
     new Characteristic::Identify();
