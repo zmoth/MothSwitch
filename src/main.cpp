@@ -1,6 +1,22 @@
 #include "header.h"
 #include "HomeSpan.h"
 
+class InvertedLED : public Blinkable
+{
+    int pin;
+
+  public:
+    InvertedLED(int pin) : pin{pin}
+    {
+        pinMode(pin, OUTPUT);
+        digitalWrite(pin, HIGH);
+    }
+
+    void on() override { digitalWrite(pin, LOW); }
+    void off() override { digitalWrite(pin, HIGH); }
+    int getPin() override { return (pin); }
+};
+
 class DevLed : public Service::LightBulb
 {
     int ledPin;
@@ -38,8 +54,9 @@ void setup()
 {
     Serial.begin(115200);
 
+    homeSpan.setStatusAutoOff(10);  // 10s
+    homeSpan.setStatusDevice(new InvertedLED(LED_PIN));
     homeSpan.setControlPin(BUTTON_PIN);
-    homeSpan.setStatusPin(LED_PIN);
 
     homeSpan.begin(Category::Outlets, "Moth Switch");
 
