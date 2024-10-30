@@ -14,7 +14,7 @@ class DevLed : public Service::LightBulb
         this->ledPin = ledPin;
         pinMode(ledPin, OUTPUT);
 
-        new SpanButton(powerPin, 2000U, 5U, 0U);
+        new SpanToggle(powerPin);
         this->powerPin = powerPin;
     }
 
@@ -26,7 +26,7 @@ class DevLed : public Service::LightBulb
 
     void button(int pin, int pressType) override
     {
-        if (pressType == SpanButton::SINGLE) {
+        if (pressType == SpanButton::OPEN || pressType == SpanButton::CLOSED) {
             power->setVal(1 - power->getVal());
         }
 
