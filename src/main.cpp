@@ -6,7 +6,7 @@ class InvertedLED : public Blinkable
     int pin;
 
   public:
-    InvertedLED(int pin) : pin{pin}
+    InvertedLED(int pin) : pin(pin)
     {
         pinMode(pin, OUTPUT);
         digitalWrite(pin, HIGH);
@@ -17,30 +17,28 @@ class InvertedLED : public Blinkable
     int getPin() override { return (pin); }
 };
 
-class DevLed : public Service::LightBulb
+class DevOutlet : public Service::Outlet
 {
-    int ledPin;
+    int outPin;
     int powerPin;
-    SpanCharacteristic *power;
+    SpanCharacteristic *power{NULL};
 
     int resetCount{0};
     uint32_t resetAlarm{0};
     uint32_t resetTime{3000};
 
   public:
-    DevLed(int ledPin, int powerPin)
+    DevOutlet(int outPin, int powerPin) : outPin(outPin), powerPin(powerPin)
     {
         power = new Characteristic::On();
-        this->ledPin = ledPin;
-        pinMode(ledPin, OUTPUT);
+        pinMode(outPin, OUTPUT);
 
         new SpanToggle(powerPin);
-        this->powerPin = powerPin;
     }
 
-    boolean update()
+    boolean update() override
     {
-        digitalWrite(ledPin, power->getNewVal());
+        digitalWrite(outPin, power->getNewVal());
         return (true);
     }
 
@@ -62,11 +60,11 @@ class DevLed : public Service::LightBulb
         if (resetCount == 7 && cTime < resetAlarm) {
             homeSpan.processSerialCommand("A");
 
-            digitalWrite(ledPin, LOW);
+            digitalWrite(outPin, LOW);
             return;
         }
 
-        digitalWrite(ledPin, power->getVal());
+        digitalWrite(outPin, power->getVal());
     }
 };
 
@@ -85,12 +83,13 @@ void setup()
 {
     Serial.begin(115200);
 
+    homeSpan.setApSSID("MothHomeSetup");
+    homeSpan.setApPassword("97654321");
+    homeSpan.enableOTA("97654321");
+
     homeSpan.setStatusAutoOff(10);  // 10s
     homeSpan.setStatusDevice(new InvertedLED(LED_PIN));
     homeSpan.setControlPin(BUTTON_PIN);
-
-    homeSpan.setApSSID("MothHomeSetup");
-    homeSpan.setApPassword("97654321");
 
     homeSpan.begin(Category::Outlets, "Moth Switch");
 
@@ -103,7 +102,7 @@ void setup()
     new Characteristic::HardwareRevision(HARDWARE_VERSION);
     new Characteristic::Identify();
 
-    new DevLed(IO_PIN, KEY_PIN);
+    new DevOutlet(IO_PIN, KEY_PIN);
 }
 
 void loop()
