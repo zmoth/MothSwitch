@@ -1,5 +1,11 @@
-#include "header.h"
+#include <Arduino.h>
+
 #include "HomeSpan.h"
+
+#define LED_PIN 8
+#define BUTTON_PIN 9
+#define IO_PIN 4
+#define KEY_PIN 0
 
 class InvertedLED : public Blinkable
 {
@@ -22,6 +28,7 @@ class DevOutlet : public Service::Outlet
     int outPin;
     int powerPin;
     SpanCharacteristic *power{NULL};
+    SpanCharacteristic *used{NULL};
 
     int resetCount{0};
     uint32_t resetAlarm{0};
@@ -30,8 +37,10 @@ class DevOutlet : public Service::Outlet
   public:
     DevOutlet(int outPin, int powerPin) : outPin(outPin), powerPin(powerPin)
     {
-        power = new Characteristic::On();
         pinMode(outPin, OUTPUT);
+
+        power = new Characteristic::On();
+        // used = new Characteristic::OutletInUse(Characteristic::OutletInUse::IN_USE);
 
         new SpanToggle(powerPin);
     }
@@ -83,9 +92,9 @@ void setup()
 {
     Serial.begin(115200);
 
-    homeSpan.setPairingCode("97654321");
-    homeSpan.setApSSID("MothHomeSetup");
+    homeSpan.setApSSID("CocoonSetup");
     homeSpan.setApPassword("97654321");
+    homeSpan.setPairingCode("97654321");
     homeSpan.enableOTA("97654321");
 
     homeSpan.setStatusAutoOff(10);  // 10s
