@@ -83,6 +83,7 @@ void setup()
 {
     Serial.begin(115200);
 
+    homeSpan.setPairingCode("97654321");
     homeSpan.setApSSID("MothHomeSetup");
     homeSpan.setApPassword("97654321");
     homeSpan.enableOTA("97654321");
